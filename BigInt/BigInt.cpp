@@ -15,9 +15,10 @@ public:
 	BigInt();
 	BigInt(std::string input);
 	BigInt operator+=(const BigInt secondInt);
-	BigInt operator+(const BigInt);
-	void operator<<(const BigInt);
+	BigInt operator+(const BigInt bi);
+	BigInt operator=(const BigInt bi);
 
+	friend std::ostream& operator<<(std::ostream &os, const BigInt bi);
 };
 BigInt::BigInt()
 	:number(0)
@@ -37,16 +38,22 @@ BigInt BigInt::operator+=(const BigInt secondInt)
 {
 	// todo:
 	// handle case where secondint is bigger than first (i.e. swap them around)
-	// handle case where we need to add an extra int at the front of the vector when it carries over
 	
 	int numberOfTens;
-	if (number.size() > secondInt.number.size())
-	{
+	if (number.size() >= secondInt.number.size())
+	{	
 		numberOfTens = secondInt.number.size();
 	}
 	else
 	{
 		numberOfTens = number.size();
+		int sizeDifference;
+		sizeDifference = secondInt.number.size() - number.size();
+		for (int i = 0; i < sizeDifference ; i++)
+		{
+			number.insert(number.begin() + i, secondInt.number.at(i));
+		}
+
 	}
 
 	int carry{ 0 };
@@ -65,40 +72,76 @@ BigInt BigInt::operator+=(const BigInt secondInt)
 	}
 	if (carry > 0)
 	{
-	
-		
-		number.at(number.size() - numberOfTens + 1) += carry;
+		//if overflows the vector, need to insert an element,
+		if (number.size() <= numberOfTens)
+		{
+			number.insert(number.begin(), 1);
+		}
+		else if (number.at(number.size() - (numberOfTens + 1)) + carry > 9)
+		{
+			int dummy;
+			dummy = number.at(number.size() - (numberOfTens + 1)) + carry;
+			number.at(number.size() - (numberOfTens + 1)) = dummy - 10;
+			
+			if (number.size() < (numberOfTens + 2))
+			{
+				number.insert(number.begin(), 1);
+			}
+			else
+			{
+				number.at(number.size() - (numberOfTens + 2)) += 1;
+			}
+		}
+		else
+		{
+			number.at(number.size() - (numberOfTens + 1)) += carry;
+		}
 	}
 
 
+
 	return *this;
 }
 
-
-BigInt BigInt::operator+(const BigInt)
+BigInt BigInt::operator+(const BigInt bi)
 {
-	return *this;
+	BigInt ret(*this);
+	ret += bi;
+	return ret;
 }
 
-void BigInt::operator<<(const BigInt)
+BigInt BigInt::operator=(const BigInt bi)
 {
-	for (long i = 0; i < BigInt::number.size(); i++)
+	for (int i = 0; i < bi.number.size(); i++)
 	{
-		std::cout << BigInt::number.at(i);
+		number.push_back(bi.number.at(i));
 	}
-
+	return *this;
 }
 
-
-
+std::ostream& operator<<(std::ostream &os, const BigInt bi)
+{
+	for (long i = 0; i < bi.number.size(); i++)
+	{
+		os << bi.number.at(i);
+	}
+	return os;
+}
 
 int main()
 {
-	BigInt a("12345");
-	BigInt b;
-	BigInt c("6789");
+	
+	//to do: adding two BigInts via + not working
+	// works fine with += though
 
-	a += c;
+	BigInt d("92345");
+	BigInt e("99999");
+	BigInt f;
+	f = d;
+	f = d + e;
 
+	system("PAUSE");
+	return 0;
 }
+
 
